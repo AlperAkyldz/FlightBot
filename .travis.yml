@@ -5,5 +5,7 @@ node_js:
 
 notifications:
   slack:
+    rooms:
+      - project2-itu:1kqc60zUArrkokU9yoKvTIR7#flightbot
     on_success: always
     on_failure: always
