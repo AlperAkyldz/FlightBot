@@ -12,7 +12,7 @@ app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
 
 app.get('/', function(req,res){
-	res.send("Hi")
+	res.send("Yoo")
 })
 
 app.get('/webhook/', function(req, res){
