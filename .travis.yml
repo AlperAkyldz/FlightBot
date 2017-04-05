@@ -3,7 +3,7 @@ node_js:
   - "iojs"
   - "7"
 
-  notifications:
+notifications:
   slack:
     on_success: always
     on_failure: always
