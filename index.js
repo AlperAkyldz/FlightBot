@@ -12,7 +12,7 @@ app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
 
 app.get('/', function(req,res){
-	res.send("Hi")
+	res.send("Yoo")
 })
 
 app.get('/webhook/', function(req, res){
@@ -45,7 +45,6 @@ app.post('/webhook/', function (req, res) {
 	}
 	res.sendStatus(200)
 })
-
 
 // recommended to inject access tokens as environmental variables, e.g.
 // const token = process.env.FB_PAGE_ACCESS_TOKEN
@@ -120,7 +119,33 @@ function sendGenericMessage(sender) {
 	})
 }
 
+//Greeting message
+function createGreetingApi(data) {
+	request({
+		uri: 'https://graph.facebook.com/v2.6/me/thread_settings',
+		qs: { access_token: token },
+		method: 'POST',
+		json: data
+	}, function (error, response, body) {
+		if (!error && response.statusCode == 200) {
+  			console.log("Greeting set successfully!");
+		} else {
+  			console.error("Failed calling Thread Reference API", response.statusCode, response.statusMessage, body.error);
+		}
+	});  
+}
+
+function setGreetingText() {
+	var greetingData = {
+		setting_type: "greeting",
+		greeting:{
+		}
+	};
+	createGreetingApi(greetingData);
+}
+
 // spin spin sugar
 app.listen(app.get('port'), function() {
 	console.log('running on port', app.get('port'))
+	setGreetingText();
 })
