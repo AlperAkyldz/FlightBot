@@ -36,6 +36,7 @@ app.post('/webhook/', function (req, res) {
       let text = event.message.text
       if(text === 'Start'){
         sendTextMessage(sender, "Example search: Ankara,Istanbul,20/04/2017",token);
+        continue;
       }
       else{
         try{
@@ -75,7 +76,7 @@ function flightList(from, to, date, callback){
           date = date.split('T');
           date = date[0];
           var price = result.Quotes[0].MinPrice;
-          var text = 'From ' + from+' to '+to+' at '+ date+'\nPrice: '+price+ ' with '+carrierName+'.';
+          var text = 'Departure: ' + from+'\nArrival: '+to+'\nDate: '+ date+'\nPrice: '+price+ 'TL\nAirline: '+carrierName+'\n';
           return callback(text);
         }
         else{
