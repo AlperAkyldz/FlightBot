@@ -40,7 +40,15 @@ app.post('/webhook/', function (req, res) {
       }
       else{
         try{
+          if (typeof text !== 'string') {
+            res.sendStatus(400);
+            return;
+          }
           var messageParse= text.split(',');
+          if (messageParse.length < 3) {
+            res.sendStatus(400);
+            return;
+          }
           var from = messageParse[0];
           var to= messageParse[1];
           var dateParse=messageParse[2].split('/');
