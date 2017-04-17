@@ -41,13 +41,13 @@ app.post('/webhook/', function (req, res) {
       else{
         try{
           if (typeof text !== 'string') {
-            res.sendStatus(400);
-            return;
+            sendTextMessage(sender, 'Wrong format.\nExample search: Ankara,Istanbul,20/04/2017', token);
+            break;
           }
           var messageParse= text.split(',');
           if (messageParse.length < 3) {
-            res.sendStatus(400);
-            return;
+            sendTextMessage(sender, 'Wrong format.\nExample search: Ankara,Istanbul,20/04/2017', token);
+            break;
           }
           var from = messageParse[0];
           var to= messageParse[1];
@@ -66,33 +66,38 @@ app.post('/webhook/', function (req, res) {
   res.sendStatus(200)
 })
 
-function flightList(from, to, date, callback){ 
-  cityName(to,function(toCityResult){
-    cityName(from,function(fromCityResult){
-      var requestUrl = 'http://partners.api.skyscanner.net/apiservices/browseroutes/v1.0/TR/TRY/tr-TR/'+fromCityResult+'/'+toCityResult+'/'+ date +'?apiKey=al726837573649825720179932112830';
-      request(requestUrl, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-          var result = JSON.parse(body);
-          var carrierId=result.Quotes[0].OutboundLeg.CarrierIds[0];
-          var carrierName;
-          for(var carrier in result.Carriers){
-            if (result.Carriers[carrier].CarrierId == carrierId){
-              carrierName=result.Carriers[carrier].Name;
+function flightList(from, to, date, callback){
+  try{ 
+    cityName(to,function(toCityResult){
+      cityName(from,function(fromCityResult){
+        var requestUrl = 'http://partners.api.skyscanner.net/apiservices/browseroutes/v1.0/TR/TRY/tr-TR/'+fromCityResult+'/'+toCityResult+'/'+ date +'?apiKey=al726837573649825720179932112830';
+        request(requestUrl, function (error, response, body) {
+          if (!error && response.statusCode == 200) {
+            var result = JSON.parse(body);
+            var carrierId=result.Quotes[0].OutboundLeg.CarrierIds[0];
+            var carrierName;
+            for(var carrier in result.Carriers){
+              if (result.Carriers[carrier].CarrierId == carrierId){
+                carrierName=result.Carriers[carrier].Name;
+              }
             }
+            var date = result.Quotes[0].OutboundLeg.DepartureDate;
+            date = date.split('T');
+            date = date[0];
+            var price = result.Quotes[0].MinPrice;
+            var text = 'Departure: ' + from+'\nArrival: '+to+'\nDate: '+ date+'\nPrice: '+price+ 'TL\nAirline: '+carrierName+'\n';
+            return callback(text);
           }
-          var date = result.Quotes[0].OutboundLeg.DepartureDate;
-          date = date.split('T');
-          date = date[0];
-          var price = result.Quotes[0].MinPrice;
-          var text = 'Departure: ' + from+'\nArrival: '+to+'\nDate: '+ date+'\nPrice: '+price+ 'TL\nAirline: '+carrierName+'\n';
-          return callback(text);
-        }
-        else{
-          console.log(error, body)
-        }
+          else{
+            console.log(error, body)
+          }
+        })
       })
     })
-  })
+  }
+  catch(err){
+    return callback('Wrong format.\nExample search: Ankara,Istanbul,20/04/2017');
+  }
 }
 
 function cityName(city,callback){
