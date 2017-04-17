@@ -38,14 +38,19 @@ app.post('/webhook/', function (req, res) {
         sendTextMessage(sender, "Example search: Ankara,Istanbul,20/04/2017",token);
       }
       else{
-        var messageParse= text.split(',');
-        var from = messageParse[0];
-        var to= messageParse[1];
-        var dateParse=messageParse[2].split('/');
-        var date=dateParse[2]+'-'+dateParse[1]+'-'+dateParse[0]; 
-        flightList(from,to,date, function(result){
-          sendTextMessage(sender, result, token);
-        })
+        try{
+          var messageParse= text.split(',');
+          var from = messageParse[0];
+          var to= messageParse[1];
+          var dateParse=messageParse[2].split('/');
+          var date=dateParse[2]+'-'+dateParse[1]+'-'+dateParse[0]; 
+          flightList(from,to,date, function(result){
+            sendTextMessage(sender, result, token);
+          })
+        }
+        catch(err){
+          console.log(err);
+        }
       }
     }
   }
