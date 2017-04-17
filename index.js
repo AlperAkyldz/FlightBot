@@ -43,7 +43,7 @@ app.post('/webhook/', function (req, res) {
         var to= messageParse[1];
         var dateParse=messageParse[2].split('/');
         var date=dateParse[2]+'-'+dateParse[1]+'-'+dateParse[0]; 
-        flightList('adana','ankara','2017-04-15', function(result){
+        flightList(from,to,date, function(result){
           sendTextMessage(sender, result, token);
         })
       }
