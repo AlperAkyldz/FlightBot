@@ -11,6 +11,10 @@ app.set('port', (process.env.PORT || 5000))
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
 
+// FB_PAGE_ACCESS_TOKEN
+const token = "EAAFvVp3go98BAGVEnTn4M0HLzcJ7EZCGenJ1K8hvma97YFxuxzLn2NjGPTp25WQ5xyYeTZAZC0ikecMUreMLo3AqXveXwDoZBlxZCdlQyktEmCbR6D4EZBMOe4cObv136eapdqlvCc7l2OqTZB0TppbltCRXufZCoS4m3h7dPI7wgAZDZD"
+
+
 app.get('/', function(req,res){
   res.send("Yoo")
 })
@@ -30,30 +34,23 @@ app.post('/webhook/', function (req, res) {
     let sender = event.sender.id
     if (event.message && event.message.text) {
       let text = event.message.text
-      if (text === 'Generic'){
-        flightList('adana','ankara','2017-04-15', function(result){
-          sendTextMessage(sender, "Postback received: "+result, token);
-        })
-        console.log("welcome to chatbot")
-        sendGenericMessage(sender)
-        continue
+      if(text === 'Start'){
+        sendTextMessage(sender, "Example search: Ankara,Istanbul,20/04/2017",token);
       }
-      sendTextMessage(sender, "Text received, echo: " + text.substring(0, 200))
-    }
-    if (event.postback) {
-      let text = JSON.stringify(event.postback)
-      sendTextMessage(sender, "Postback received: "+text.substring(0, 200), token)
-      continue
+      else{
+        var messageParse= text.split(',');
+        var from = messageParse[0];
+        var to= messageParse[1];
+        var dateParse=messageParse[2].split('/');
+        var date=dateParse[2]+'-'+dateParse[1]+'-'+dateParse[0]; 
+        flightList('adana','ankara','2017-04-15', function(result){
+          sendTextMessage(sender, result, token);
+        })
+      }
     }
   }
   res.sendStatus(200)
 })
-
-// recommended to inject access tokens as environmental variables, e.g.
-// const token = process.env.FB_PAGE_ACCESS_TOKEN
-const token = "EAAFvVp3go98BAGVEnTn4M0HLzcJ7EZCGenJ1K8hvma97YFxuxzLn2NjGPTp25WQ5xyYeTZAZC0ikecMUreMLo3AqXveXwDoZBlxZCdlQyktEmCbR6D4EZBMOe4cObv136eapdqlvCc7l2OqTZB0TppbltCRXufZCoS4m3h7dPI7wgAZDZD"
-
-
 
 function flightList(from, to, date, callback){ 
   cityName(to,function(toCityResult){
@@ -70,14 +67,11 @@ function flightList(from, to, date, callback){
             }
           }
           var date = result.Quotes[0].OutboundLeg.DepartureDate;
+          date = date.split('T');
+          date = date[0];
           var price = result.Quotes[0].MinPrice;
-          var array=[];
-          array.push(from);
-          array.push(to);
-          array.push(price);
-          array.push(date);
-          array.push(carrierName);
-          return callback(array);
+          var text = 'From ' + from+' to '+to+' at '+ date+'\nPrice: '+price+ ' with '+carrierName+'.';
+          return callback(text);
         }
         else{
           console.log(error, body)
@@ -100,61 +94,8 @@ function cityName(city,callback){
   })
 }
 
-
-
-
 function sendTextMessage(sender, text) {
   let messageData = { text:text }
-  
-  request({
-    url: 'https://graph.facebook.com/v2.6/me/messages',
-    qs: {access_token:token},
-    method: 'POST',
-    json: {
-      recipient: {id:sender},
-      message: messageData,
-    }
-  }, function(error, response, body) {
-    if (error) {
-      console.log('Error sending messages: ', error)
-    } else if (response.body.error) {
-      console.log('Error: ', response.body.error)
-    }
-  })
-}
-
-function sendGenericMessage(sender) {
-  let messageData = {
-    "attachment": {
-      "type": "template",
-      "payload": {
-        "template_type": "generic",
-        "elements": [{
-          "title": "First card",
-          "subtitle": "Element #1 of an hscroll",
-          "image_url": "http://messengerdemo.parseapp.com/img/rift.png",
-          "buttons": [{
-            "type": "web_url",
-            "url": "https://www.messenger.com",
-            "title": "web url"
-          }, {
-            "type": "postback",
-            "title": "Postback",
-            "payload": "Payload for first element in a generic bubble",
-          }],
-        }, {
-          "title": "Second card",
-          "subtitle": "Element #2 of an hscroll",
-          "image_url": "http://messengerdemo.parseapp.com/img/gearvr.png",
-          "buttons": [{
-            "type": "postback",
-            "title": "Postback",
-            "payload": "Payload for second element in a generic bubble",
-          }],
-        }]
-      }
-    }
-  }
   request({
     url: 'https://graph.facebook.com/v2.6/me/messages',
     qs: {access_token:token},
@@ -202,7 +143,4 @@ function setGreetingText() {
 app.listen(app.get('port'), function() {
   console.log('running on port', app.get('port'))
   setGreetingText();
-  flightList('adana','ankara','2017-04-15', function(result){
-    console.log(result);
-  })
 })
