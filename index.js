@@ -70,6 +70,10 @@ function flightList(from, to, date, callback){
   try{ 
     cityName(to,function(toCityResult){
       cityName(from,function(fromCityResult){
+        if(toCityResult==='cityError' || fromCityResult==='cityError'){
+          var message = 'Wrong city name! Try again';
+          return callback(message);
+        }
         var requestUrl = 'http://partners.api.skyscanner.net/apiservices/browseroutes/v1.0/TR/TRY/tr-TR/'+fromCityResult+'/'+toCityResult+'/'+ date +'?apiKey=al726837573649825720179932112830';
         request(requestUrl, function (error, response, body) {
           if (!error && response.statusCode == 200) {
@@ -105,6 +109,9 @@ function cityName(city,callback){
   request(cityNameRequestUrl, function (error, response, body) {
     if (!error && response.statusCode == 200) {
       var result = JSON.parse(body);
+      if(result.Places.length===0){
+        return callback('cityError');
+      }
       return callback(result.Places[0].CityId);
     }
     else{
